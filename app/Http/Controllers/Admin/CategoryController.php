@@ -106,9 +106,9 @@ class CategoryController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required',
-            'slug' => 'required|unique:categories,slug,' . $category->id . ',id',
+            'slug' => 'required|unique:categories,slug,' . $category->id .',id',
             'status' => 'nullable',
-            'image_id' => 'nullable|exists:temp_images,id',
+            // 'image_id' => 'nullable|exists:temp_images,id',
         ]);
 
         if ($validator->passes()) {
@@ -125,18 +125,15 @@ class CategoryController extends Controller
                 $sPath = public_path() . '/temp/' . $tempImage->name;
                 $dPath = public_path() . '/uploads/category/' . $newImageName;
                 File::copy($sPath, $dPath);
+                //Generating Thumbnail
+                $dPath = public_path() . '/uploads/category/thumb/' . $newImageName;
+                $image = ImageManager::imagick()->read($sPath);
+                $image->scale(450, 600);
+                // $image->resize(450, 600);
+                $image->save($dPath);
+                $category->image = $newImageName;
+                $category->save();
             }
-
-            //Generating Thumbnail
-            $dPath = public_path() . '/uploads/category/thumb/' . $newImageName;
-            $image = ImageManager::imagick()->read($sPath);
-            $image->scale(450, 600);
-            // $image->resize(450, 600);
-            $image->save($dPath);
-
-
-            $category->image = $newImageName;
-            $category->save();
 
             //Delete Old Image
             File::delete(public_path() . '/uploads/category/thumb/' . $oldImage);
@@ -153,7 +150,7 @@ class CategoryController extends Controller
         } else {
             return response()->json([
                 'status' => false,
-                'message' => 'Category cannot be updated.',
+                'message' => 'Category cannot be updated',
                 'errors' => $validator->errors(),
             ]);
         }
@@ -162,7 +159,18 @@ class CategoryController extends Controller
     public function destroy(Request $request, $id)
     {
         $category = Category::find($id);
-        if (empty($category)) {
+        if($category)
+        {
+            $category->delete();
+            File::delete(public_path() . '/uploads/category/thumb/' . $category->image);
+            File::delete(public_path() . '/uploads/category/' . $category->image);
+            Session::flash('success', 'Category deleted successfully.');
+            return response()->json([
+                'status'=> true,
+                'message' => 'Category deleted successfully',
+            ]);
+        }
+        else{
             Session::flash('error', 'Category not Found.');
             return response()->json([
                 'status'=> true,
@@ -170,19 +178,5 @@ class CategoryController extends Controller
             ]);
             // return redirect()->route('admin.category.index');
         }
-        File::delete(public_path() . '/uploads/category/thumb/' . $category->image);
-        File::delete(public_path() . '/uploads/category/' . $category->image);
-        $category->delete();
-        Session::flash('success', 'Category deleted successfully.');
-
-        if($category)
-        {
-            return response()->json([
-                'status'=> true,
-                'message' => 'Category deleted successfully',
-            ]);
-        }
-
-
     }
 }

@@ -13,20 +13,27 @@ class SubCategoryController extends Controller
 {
     public function index(Request $request)
     {
-        $subCategories = SubCategory::latest('id');
+        $query = SubCategory::with('category')
+            ->select('sub_categories.*', 'categories.name as categoryName')
+            ->latest('sub_categories.id')
+            ->leftJoin('categories', 'categories.id', '=', 'sub_categories.category_id');
 
-        if(!empty($request->get("keyword"))){
-            $subCategories = $subCategories->where("name","like", "%". $request->get("keyword") ."%");
+        if ($request->get("keyword")) {
+            $keyword = $request->get("keyword");
+            $query->where(function ($query) use ($keyword) {
+                $query->where('sub_categories.name', 'like', "%{$keyword}%")
+                      ->orWhere("categories.name", "like", "%{$keyword}%");
+            });
         }
-        $subCategories = $subCategories->paginate(10);
-        return view("Admin.SubCategory.index", compact("subCategories"));
-
+        $subCategories = $query->paginate(10);
+        return view('Admin.SubCategory.index', compact('subCategories'));
     }
     public function create()
     {
-        $categories = Category::orderBy("name", "asc")->get();
-        $data['categories'] = $categories;
-        return view('Admin.SubCategory.create', $data);
+        $categories =  Category::orderBy('name', 'asc')->get();
+        return view('Admin.SubCategory.create', [
+            'categories' => $categories
+        ]);
     }
 
     public function store(Request $request)
@@ -34,34 +41,118 @@ class SubCategoryController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required',
             'slug' => 'required|unique:sub_categories',
-            'status' => 'nullable',
+            'status' => 'required',
             'category_id' => 'required',
         ]);
 
         if ($validator->passes()) {
-            $inputs = $request->all();
-            $SubCategory = SubCategory::create($inputs);
+            // $inputs = $request->all();
+            // $subCategory = SubCategory::create($inputs);
 
-            // $SubCategory = new SubCategory();
-            // $SubCategory->name = $request->name;
-            // $SubCategory->slug = $request->slug;
-            // $SubCategory->status = $request->status;
-            // $SubCategory->category_id = $request->category_id;
-            // $SubCategory->save();
+            $subCategory = new SubCategory();
+            $subCategory->name = $request->name;
+            $subCategory->slug = $request->slug;
+            $subCategory->status = $request->status;
+            $subCategory->category_id = $request->category_id;
+            $subCategory->save();
 
-            Session::flash('success', 'Sub-category added Successfully');
-            if ($SubCategory) {
+            Session::flash('success', 'Sub-Category created successfully');
+            if($subCategory){
                 return response()->json([
                     'status' => true,
-                    'message' => 'Sub-category added successfuly',
-                    'subcategory' => $SubCategory,
+                    'message' => 'Sub-Category created successfully',
+                    'subCategory' => $subCategory,
                 ]);
             }
-        } else {
+        }
+        else {
             return response()->json([
                 'status' => false,
-                'message' => 'Sub-category cannot be added',
+                'message' => 'Sub-Category cannot be created',
                 'errors' => $validator->errors(),
+            ]);
+        }
+    }
+
+    public function edit(Request $request, $id)
+    {
+        $subCategory = SubCategory::find($id);
+        if($subCategory)
+        {
+            $categories = Category::orderBy('name','asc')->get();
+            return view('Admin.SubCategory.edit', [
+                'categories'=> $categories,
+                'subCategory' => $subCategory,
+            ]);
+        }
+        else{
+            Session::flash('error','Sub-Category not found ');
+            return redirect()->route('admin.sub-category.index');
+        }
+    }
+
+    public function update(Request $request, $id)
+    {
+        $subCategory = SubCategory::find($id);
+        if(empty($subCategory)){
+            Session::flash('error','Sub-Category not Found');
+            return response()->json([
+                'status'=> false,
+                'not Found' => true,
+                'message' => 'Sub-Category not found',
+                ]);
+        }
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'slug' => 'required|unique:sub_categories,slug, '.$subCategory->id.',id',
+            'status' => 'required',
+            'category_id' => 'required',
+        ]);
+        if ($validator->passes()) {
+            $inputs = $request->all();
+            $subCategory->update($inputs);
+
+            // $subCategory = new SubCategory();
+            // $subCategory->name = $request->name;
+            // $subCategory->slug = $request->slug;
+            // $subCategory->status = $request->status;
+            // $subCategory->category_id = $request->category;
+            // $subCategory->save();
+
+            Session::flash('success', 'Sub-Category updated successfully');
+            if($subCategory){
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Sub-Category updated successfully',
+                    'subCategory' => $subCategory,
+                ]);
+            }
+        }
+        else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Sub-Category cannot be updated',
+                'errors' => $validator->errors(),
+            ]);
+        }
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $subCategory = SubCategory::find($id);
+        if ($subCategory) {
+            $subCategory->delete();
+            Session::flash('success', 'Sub-Category deleted successfully');
+            return  response()->json([
+                'status' => true,
+                'message' => 'Sub-Category deleted successully',
+            ]);
+        } 
+        else {
+            Session::flash('error','Sub-Category not Found');
+            return response()->json([
+                'status' => false,
+                'message' => 'Sub-Category not found'
             ]);
         }
     }

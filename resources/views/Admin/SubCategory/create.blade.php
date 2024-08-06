@@ -7,7 +7,7 @@
             <div class="container-fluid my-2">
                 <div class="row mb-2">
                     <div class="col-sm-6">
-                        <h1>Create Sub Category</h1>
+                        <h1>Create Sub-Category</h1>
                     </div>
                     <div class="col-sm-6 text-right">
                         <a href="{{ route('admin.sub-category.index') }}" class="btn btn-primary">Back</a>
@@ -93,7 +93,7 @@
                 success: function(response) {
                     if (response.status == true) {
                         $('button[type=submit]').prop('disabled', false);
-                        // window.location.href = "{{ route('admin.sub-category.index') }}";
+                        window.location.href = "{{ route('admin.sub-category.index') }}";
                         $('#name').removeClass('is-invalid')
                             .siblings('p')
                             .removeClass('invalid-feedback')
