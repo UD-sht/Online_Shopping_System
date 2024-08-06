@@ -4,10 +4,11 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\HomeController;
+use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\AdminLoginController;
-use App\Http\Controllers\Admin\SubCategoryController;
 use App\Http\Controllers\Admin\TempImagesController;
+use App\Http\Controllers\Admin\SubCategoryController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -48,6 +49,14 @@ Route::group(['prefix' => 'admin'], function ()
         Route::get('/sub-category/{sub_category}/edit', [SubCategoryController::class, 'edit'])->name('admin.sub-category.edit');
         Route::put('/sub-category/{sub_category}', [SubCategoryController::class, 'update'])->name('admin.sub-category.update');
         Route::delete('/sub-category/{sub_category}', [SubCategoryController::class, 'destroy'])->name('admin.sub-category.destroy');
+
+        //For Brand
+        Route::get('/brand', [BrandController::class, 'index'])->name('admin.brand.index');
+        Route::get('/brand/create', [BrandController::class, 'create'])->name('admin.brand.create');
+        Route::post('/brand/store', [BrandController::class, 'store'])->name('admin.brand.store');
+        Route::get('/brand/{brand}/edit', [BrandController::class, 'edit'])->name('admin.brand.edit');
+        Route::put('/brand/{brand}', [BrandController::class, 'update'])->name('admin.brand.update');
+        Route::delete('/brand/{brand}', [BrandController::class, 'destroy'])->name('admin.brand.destroy');
 
 
         Route::get('/getslug', function(Request $request){

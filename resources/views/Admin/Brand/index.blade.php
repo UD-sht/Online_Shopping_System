@@ -7,10 +7,10 @@
             <div class="container-fluid my-2">
                 <div class="row mb-2">
                     <div class="col-sm-6">
-                        <h1>Sub-Categories</h1>
+                        <h1>Brands</h1>
                     </div>
                     <div class="col-sm-6 text-right">
-                        <a href="{{ route('admin.sub-category.create') }}" class="btn btn-primary">New Sub-Category</a>
+                        <a href="{{ route('admin.brand.create') }}" class="btn btn-primary">New Brand</a>
                     </div>
                 </div>
             </div>
@@ -22,10 +22,10 @@
             <!-- Default box -->
             <div class="container-fluid">
                 <div class="card">
-                    <form action="" method="get" id="searchSubCategory">
+                    <form action="" method="get" id="searchBrand">
                         <div class="card-header">
                             <div class="card-title">
-                                <button type="button" onclick="window.location.href='{{ route('admin.sub-category.index') }}'"
+                                <button type="button" onclick="window.location.href='{{ route('admin.brand.index') }}'"
                                     class="btn btn-default btn-sm">Reset</button>
                             </div>
                             <div class="card-tools">
@@ -48,21 +48,19 @@
                                     <th width="60">ID</th>
                                     <th>Name</th>
                                     <th>Slug</th>
-                                    <th>Category</th>
                                     <th width="100">Status</th>
                                     <th width="100">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @if ($subCategories->isNotEmpty())
-                                    @foreach ($subCategories as $subcategory)
+                                @if ($brands->isNotEmpty())
+                                    @foreach ($brands as $brand)
                                         <tr>
-                                            <td>{{ $subcategory->id }}</td>
-                                            <td>{{ $subcategory->name }}</td>
-                                            <td>{{ $subcategory->slug }}</td>
-                                            <td>{{ $subcategory->categoryName }}</td>
+                                            <td>{{ $brand->id }}</td>
+                                            <td>{{ $brand->name }}</td>
+                                            <td>{{ $brand->slug }}</td>
                                             <td>
-                                                @if ($subcategory->status == 1)
+                                                @if ($brand->status == 1)
                                                     <svg class="text-success-500 h-6 w-6 text-success"
                                                         xmlns="http://www.w3.org/2000/svg" fill="none"
                                                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
@@ -81,7 +79,7 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                <a href="{{ route('admin.sub-category.edit', $subcategory->id) }}">
+                                                <a href="{{ route('admin.brand.edit', $brand->id) }}">
                                                     <svg class="filament-link-icon w-4 h-4 mr-1"
                                                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                                                         fill="currentColor" aria-hidden="true">
@@ -90,7 +88,7 @@
                                                         </path>
                                                     </svg>
                                                 </a>
-                                                <a href="" onclick="deleteSubCategory({{ $subcategory->id }})"
+                                                <a href="" onclick="deleteBrand({{ $brand->id }})"
                                                     class="text-danger w-4 h-4 mr-1">
                                                     <svg wire:loading.remove.delay="" wire:target=""
                                                         class="filament-link-icon w-4 h-4 mr-1"
@@ -113,7 +111,7 @@
                         </table>
                     </div>
                     <div class="card-footer clearfix">
-                        {{ $subCategories->links() }}
+                        {{ $brands->links() }}
                     </div>
                 </div>
             </div>
@@ -125,27 +123,24 @@
 
 @section('jsPage')
     <script>
-        function deleteSubCategory(id) {
-            var url = '{{ route('admin.sub-category.destroy', 'ID') }}';
+        function deleteBrand(id){
+            var url = '{{ route('admin.brand.destroy', "ID") }}';
             var newUrl = url.replace("ID", id);
-
-            if (confirm("Are you sure want to delete?")) {
-                $.ajax({
-                    url: newUrl,
-                    type: 'delete',
-                    data: {},
-                    dataType: 'json',
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf_token"]').attr('content')
-                    },
-                    success: function(response){
-                        window.location.href = "{{ route('admin.sub-category.index') }}";
-                        // if(response.status){
-                        //     window.location.href = "{{ route('admin.sub-category.index') }}";
-                        // }
-                    },
-                });
-            }
+            $.ajax({
+                url: newUrl,
+                type: 'delete',
+                data: {},
+                dataType: 'json',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf_token"]').attr('content')
+                },
+                success: function(response){
+                    if(response.status){
+                        window.location.href = "{{ route('admin.brand.index') }}";
+                    }
+                }
+            });
         }
     </script>
 @endsection
+

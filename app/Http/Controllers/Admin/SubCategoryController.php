@@ -147,7 +147,7 @@ class SubCategoryController extends Controller
                 'status' => true,
                 'message' => 'Sub-Category deleted successully',
             ]);
-        } 
+        }
         else {
             Session::flash('error','Sub-Category not Found');
             return response()->json([
